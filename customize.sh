@@ -148,4 +148,9 @@ echo "  duplex set to '1' in rpt.conf"
 
 echo "Done — simpleusb.conf and rpt.conf updated"
 
+echo ""
+echo "=== Step 4: Restarting Asterisk to apply configuration ==="
+systemctl restart asterisk
+echo "Done — Asterisk restarted"
+
 # More steps to follow...
