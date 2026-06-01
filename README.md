@@ -17,7 +17,7 @@ sudo bash customize.sh
 
 `customize.sh` automates the configuration changes required after a base ASL3 install to get the AIOC working as a half-duplex hotspot. **Run this script after completing node setup in `asl-menu`.** If run beforehand, the node configuration steps will be skipped with a clear message and no harm will be done — but you will need to run it again after `asl-menu` to apply them.
 
-> ⚠️ **The script is tied to a specific node number. It will error and exit if that node has not been configured yet via `asl-menu`. Run `asl-menu` to set up your node before expecting step 3 to apply.**
+> ⚠️ **The script will error and exit if no node has been configured yet. Run `asl-menu` to set up your node before running this script.**
 
 ## What the script does
 
