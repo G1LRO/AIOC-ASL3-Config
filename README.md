@@ -6,6 +6,8 @@ Customisation script to configure an [AIOC (All-In-One-Cable)](https://github.co
 
 `customize.sh` automates the configuration changes required after a base ASL3 install to get the AIOC working as a half-duplex hotspot. It is safe to run both **before** and **after** running the node setup wizard in `asl-menu` — steps that depend on the node being configured will be skipped with a clear message if the node stanza is not yet present.
 
+> ⚠️ **The script is tied to a specific node number. It will error and exit if that node has not been configured yet via `asl-menu`. Run `asl-menu` to set up your node before expecting step 3 to apply.**
+
 ## What the script does
 
 | Step | File | Change |
@@ -27,40 +29,19 @@ A timestamped backup of each config file is created at the start of every run, e
 - AIOC USB device
 - Run as root (or with `sudo`)
 
-## Usage
-
-### 1. Download the script
+## Install and run
 
 ```bash
 wget https://raw.githubusercontent.com/G1LRO/AIOC-ASL3-Config/main/customize.sh
-```
-
-### 2. Set your node number
-
-Edit the `NODE` variable near the top of the script:
-
-```bash
-NODE="58175"   # Your AllStar node number
-```
-
-### 3. Make it executable
-
-```bash
-chmod +x customize.sh
-```
-
-### 4. Run it
-
-```bash
-sudo ./customize.sh
+sudo bash customize.sh
 ```
 
 ### Recommended workflow
 
 ```
-sudo ./customize.sh        # Run before node setup — steps 1 & 2 apply
+sudo bash customize.sh     # Run before node setup — steps 1 & 2 apply
 sudo asl-menu              # Configure your node
-sudo ./customize.sh        # Run again — step 3 now applies
+sudo bash customize.sh     # Run again — step 3 now applies
 ```
 
 ## AIOC USB identifiers
