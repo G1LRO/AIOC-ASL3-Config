@@ -5,18 +5,11 @@
 set -euo pipefail
 
 CONF_DIR="/etc/asterisk"
-NODE="58175"   # Your AllStar node number
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
-# Helper: back up a file with a timestamp suffix
-backup_file() {
-    local file="$1"
-    if [ -f "$file" ]; then
-        cp "$file" "${file}.bak.${TIMESTAMP}"
-        echo "  Backed up $(basename "$file") → $(basename "$file").bak.${TIMESTAMP}"
-    else
-        echo "  NOTICE: $(basename "$file") not found, skipping backup"
-    fi
+# Auto-detect node number from rpt.conf (first numeric stanza)
+detect_node() {
+    grep -oP '^\[\K[0-9]{4,6}(?=\])' "$CONF_DIR/rpt.conf" 2>/dev/null | head -1
 }
 
 # Helper: set a key=value within a node's stanza in a config file.
@@ -45,6 +38,16 @@ node_stanza_exists() {
 # ---------------------------------------------------------------------------
 
 echo "=== Backing up config files ==="
+
+backup_file() {
+    local file="$1"
+    if [ -f "$file" ]; then
+        cp "$file" "${file}.bak.${TIMESTAMP}"
+        echo "  Backed up $(basename "$file") → $(basename "$file").bak.${TIMESTAMP}"
+    else
+        echo "  NOTICE: $(basename "$file") not found, skipping backup"
+    fi
+}
 
 backup_file "$CONF_DIR/res_usbradio.conf"
 backup_file "$CONF_DIR/simpleusb.conf"
@@ -84,13 +87,25 @@ echo "=== Step 3: Configure simpleusb.conf and rpt.conf for AIOC hotspot ==="
 SIMPLEUSB="$CONF_DIR/simpleusb.conf"
 RPTCONF="$CONF_DIR/rpt.conf"
 
-if [ ! -f "$SIMPLEUSB" ] || [ ! -f "$RPTCONF" ]; then
-    echo "SKIPPED — simpleusb.conf or rpt.conf not found yet."
-    echo "          Re-run this script after completing node setup in asl-menu."
+NODE=$(detect_node)
+
+if [ -z "$NODE" ]; then
+    echo ""
+    echo "  *** YOUR NODE HAS NOT BEEN SET UP YET ***"
+    echo ""
+    echo "  This step was skipped because no node was found in the configuration."
+    echo "  Please run 'sudo asl-menu' to set up your node, then re-run this script."
+    echo ""
 elif ! node_stanza_exists "$SIMPLEUSB" || ! node_stanza_exists "$RPTCONF"; then
-    echo "SKIPPED — Node [${NODE}] stanza not found in one or both config files."
-    echo "          Re-run this script after completing node setup in asl-menu."
+    echo ""
+    echo "  *** NODE $NODE NOT FULLY CONFIGURED YET ***"
+    echo ""
+    echo "  This step was skipped because the node configuration is incomplete."
+    echo "  Please run 'sudo asl-menu' to finish setting up your node, then re-run this script."
+    echo ""
 else
+    echo "  Detected node: $NODE"
+
     # PTT = ground (invertptt = no)
     set_conf "$SIMPLEUSB" "invertptt" "no" "${NODE}"
     echo "  invertptt set to 'no' (ground to transmit)"
