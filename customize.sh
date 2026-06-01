@@ -7,9 +7,9 @@ set -euo pipefail
 CONF_DIR="/etc/asterisk"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
-# Auto-detect node number from rpt.conf (first numeric stanza)
+# Auto-detect node number from rpt.conf (first numeric stanza, excluding default 1999)
 detect_node() {
-    grep -oP '^\[\K[0-9]{4,6}(?=\])' "$CONF_DIR/rpt.conf" 2>/dev/null | head -1
+    grep -oP '^\[\K[0-9]{4,6}(?=\])' "$CONF_DIR/rpt.conf" 2>/dev/null | grep -v '^1999$' | head -1
 }
 
 # Helper: set a key=value within a node's stanza in a config file.
