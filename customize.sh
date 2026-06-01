@@ -22,10 +22,8 @@ set_conf() {
     local section="$4"
 
     if grep -qE "^${key}\s*=" "$file"; then
-        # Key exists — replace it
         sed -i "s|^${key}\s*=.*|${key} = ${value}|" "$file"
     else
-        # Key absent — insert after the stanza header
         sed -i "/^\[${section}\]/a ${key} = ${value}" "$file"
     fi
 }
@@ -37,6 +35,29 @@ node_stanza_exists() {
 
 # ---------------------------------------------------------------------------
 
+echo "=== Checking node configuration ==="
+
+NODE=$(detect_node)
+
+if [ -z "$NODE" ] || ! node_stanza_exists "$CONF_DIR/simpleusb.conf" || ! node_stanza_exists "$CONF_DIR/rpt.conf"; then
+    echo ""
+    echo "  *****************************************************"
+    echo "  *                                                   *"
+    echo "  *      YOUR NODE HAS NOT BEEN SET UP YET           *"
+    echo "  *                                                   *"
+    echo "  *  Please run 'sudo asl-menu' to set up your node  *"
+    echo "  *  and then re-run this script.                    *"
+    echo "  *                                                   *"
+    echo "  *****************************************************"
+    echo ""
+    exit 1
+fi
+
+echo "  Detected node: $NODE"
+
+# ---------------------------------------------------------------------------
+
+echo ""
 echo "=== Backing up config files ==="
 
 backup_file() {
@@ -65,7 +86,6 @@ if [ ! -f "$FILE" ]; then
     exit 1
 fi
 
-# Uncomment the usb_devices line (remove leading semicolon + optional space)
 sed -i 's/^;usb_devices/usb_devices/' "$FILE"
 
 echo "Done — usb_devices line uncommented in $FILE"
@@ -87,42 +107,22 @@ echo "=== Step 3: Configure simpleusb.conf and rpt.conf for AIOC hotspot ==="
 SIMPLEUSB="$CONF_DIR/simpleusb.conf"
 RPTCONF="$CONF_DIR/rpt.conf"
 
-NODE=$(detect_node)
+# PTT = ground (invertptt = no)
+set_conf "$SIMPLEUSB" "invertptt" "no" "${NODE}"
+echo "  invertptt set to 'no' (ground to transmit)"
 
-if [ -z "$NODE" ]; then
-    echo ""
-    echo "  *** YOUR NODE HAS NOT BEEN SET UP YET ***"
-    echo ""
-    echo "  This step was skipped because no node was found in the configuration."
-    echo "  Please run 'sudo asl-menu' to set up your node, then re-run this script."
-    echo ""
-elif ! node_stanza_exists "$SIMPLEUSB" || ! node_stanza_exists "$RPTCONF"; then
-    echo ""
-    echo "  *** NODE $NODE NOT FULLY CONFIGURED YET ***"
-    echo ""
-    echo "  This step was skipped because the node configuration is incomplete."
-    echo "  Please run 'sudo asl-menu' to finish setting up your node, then re-run this script."
-    echo ""
-else
-    echo "  Detected node: $NODE"
+# Carrier from = usbinvert
+set_conf "$SIMPLEUSB" "carrierfrom" "usbinvert" "${NODE}"
+echo "  carrierfrom set to 'usbinvert'"
 
-    # PTT = ground (invertptt = no)
-    set_conf "$SIMPLEUSB" "invertptt" "no" "${NODE}"
-    echo "  invertptt set to 'no' (ground to transmit)"
+# CTCSS from = no (hotspot, no external CTCSS)
+set_conf "$SIMPLEUSB" "ctcssfrom" "no" "${NODE}"
+echo "  ctcssfrom set to 'no'"
 
-    # Carrier from = usbinvert
-    set_conf "$SIMPLEUSB" "carrierfrom" "usbinvert" "${NODE}"
-    echo "  carrierfrom set to 'usbinvert'"
+# Duplex = 1 — half duplex with telemetry (hotspot mode)
+set_conf "$RPTCONF" "duplex" "1" "${NODE}"
+echo "  duplex set to '1' in rpt.conf"
 
-    # CTCSS from = no (hotspot, no external CTCSS)
-    set_conf "$SIMPLEUSB" "ctcssfrom" "no" "${NODE}"
-    echo "  ctcssfrom set to 'no'"
-
-    # Duplex = 1 — half duplex with telemetry (hotspot mode)
-    set_conf "$RPTCONF" "duplex" "1" "${NODE}"
-    echo "  duplex set to '1' in rpt.conf"
-
-    echo "Done — simpleusb.conf and rpt.conf updated"
-fi
+echo "Done — simpleusb.conf and rpt.conf updated"
 
 # More steps to follow...
