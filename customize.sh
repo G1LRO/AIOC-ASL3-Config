@@ -9,7 +9,9 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # Auto-detect node number from rpt.conf (first numeric stanza, excluding default 1999)
 detect_node() {
-    grep -oP '^\[\K[0-9]{4,6}(?=\])' "$CONF_DIR/rpt.conf" 2>/dev/null | grep -v '^1999$' | head -1 || true
+    local nodes
+    nodes=$(grep -oP '^\[\K[0-9]{4,6}(?=\])' "$CONF_DIR/rpt.conf" 2>/dev/null || echo "")
+    echo "$nodes" | grep -v '^1999$' | head -1 || echo ""
 }
 
 # Helper: set a key=value within a node's stanza in a config file.
