@@ -4,7 +4,7 @@ Customisation script to configure an [AIOC (All-In-One-Cable)](https://github.co
 
 ## Overview
 
-`customize.sh` automates the configuration changes required after a base ASL3 install to get the AIOC working as a half-duplex hotspot. It is safe to run both **before** and **after** running the node setup wizard in `asl-menu` — steps that depend on the node being configured will be skipped with a clear message if the node stanza is not yet present.
+`customize.sh` automates the configuration changes required after a base ASL3 install to get the AIOC working as a half-duplex hotspot. **Run this script after completing node setup in `asl-menu`.** If run beforehand, node-specific steps will be skipped with a clear message and no harm will be done — but you will need to run it again after `asl-menu` to apply them.
 
 > ⚠️ **The script is tied to a specific node number. It will error and exit if that node has not been configured yet via `asl-menu`. Run `asl-menu` to set up your node before expecting step 3 to apply.**
 
