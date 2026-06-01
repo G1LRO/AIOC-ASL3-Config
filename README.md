@@ -7,7 +7,7 @@ Customisation script to configure an [AIOC (All-In-One-Cable)](https://github.co
 1. Complete node setup in `asl-menu`
 2. Run:
 ```bash
-wget https://raw.githubusercontent.com/G1LRO/AIOC-ASL3-Config/main/customize.sh
+wget -O customize.sh https://raw.githubusercontent.com/G1LRO/AIOC-ASL3-Config/main/customize.sh
 sudo bash customize.sh
 ```
 
@@ -43,7 +43,7 @@ A timestamped backup of each config file is created at the start of every run, e
 ## Install and run
 
 ```bash
-wget https://raw.githubusercontent.com/G1LRO/AIOC-ASL3-Config/main/customize.sh
+wget -O customize.sh https://raw.githubusercontent.com/G1LRO/AIOC-ASL3-Config/main/customize.sh
 sudo bash customize.sh
 ```
 
