@@ -39,9 +39,8 @@ sudo bash customize.sh
 ### Recommended workflow
 
 ```
-sudo bash customize.sh     # Run before node setup — steps 1 & 2 apply
-sudo asl-menu              # Configure your node
-sudo bash customize.sh     # Run again — step 3 now applies
+sudo asl-menu              # Configure your node first
+sudo bash customize.sh     # Then run this script
 ```
 
 ## AIOC USB identifiers
