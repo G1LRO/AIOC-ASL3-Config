@@ -14,18 +14,39 @@ detect_node() {
     echo "$nodes" | grep -v '^1999$' | head -1 || echo ""
 }
 
-# Helper: set a key=value within a node's stanza in a config file.
-# If the key already exists (anywhere in the file), replaces it.
-# If the key is absent, inserts it on the line after the stanza header.
+# Helper: set a key=value within a specific node stanza in a config file.
+# Only looks within the target stanza — ignores template sections.
+# If the key exists in the stanza, replaces it. If absent, inserts after the stanza header.
 set_conf() {
     local file="$1"
     local key="$2"
     local value="$3"
     local section="$4"
 
-    if grep -qE "^${key}\s*=" "$file"; then
-        sed -i "s|^${key}\s*=.*|${key} = ${value}|" "$file"
+    # Check if key exists within the specific stanza (not the whole file)
+    local in_stanza=0
+    local found=0
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^\[${section}\] ]]; then
+            in_stanza=1
+        elif [[ "$line" =~ ^\[ ]]; then
+            in_stanza=0
+        fi
+        if [[ $in_stanza -eq 1 ]] && [[ "$line" =~ ^${key}[[:space:]]*= ]]; then
+            found=1
+            break
+        fi
+    done < "$file"
+
+    if [[ $found -eq 1 ]]; then
+        # Key exists in stanza — replace it using awk scoped to the stanza
+        awk -v section="$section" -v key="$key" -v value="$value" '
+            /^\[/ { in_section = ($0 ~ "^\\[" section "\\]") }
+            in_section && $0 ~ "^" key "[[:space:]]*=" { print key " = " value; next }
+            { print }
+        ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
     else
+        # Key absent in stanza — insert after the stanza header
         sed -i "/^\[${section}\]/a ${key} = ${value}" "$file"
     fi
 }
